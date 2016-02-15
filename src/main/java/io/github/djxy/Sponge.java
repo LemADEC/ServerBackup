@@ -130,7 +130,6 @@ public class Sponge implements CommandExecutor{
             }
         }
         else if(isFileValid(file)) {
-            logger.info(getFileName(file));
             zos.putNextEntry(new ZipEntry(getFileName(file)));
 
             FileInputStream fis = new FileInputStream(file);
