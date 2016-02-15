@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="ServerBackup">
+    <output-path>$PROJECT_DIR$/../spongeServer/mods</output-path>
+    <root id="archive" name="ServerBackup.jar">
+      <element id="module-output" name="ServerBackup" />
+    </root>
+  </artifact>
+</component>
