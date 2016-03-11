@@ -27,7 +27,7 @@ import java.util.zip.ZipOutputStream;
 /**
  * Created by Samuel on 2016-02-07.
  */
-@Plugin(id = "ServerBackup", name = "Server backup", version = "1.0")
+@Plugin(id = "server_backup", name = "Server backup", version = "1.0")
 public class Sponge implements CommandExecutor{
 
     @Inject
