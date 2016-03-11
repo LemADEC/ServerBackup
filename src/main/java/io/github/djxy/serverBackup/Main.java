@@ -85,7 +85,7 @@ public class Main implements CommandExecutor{
                 config.createNewFile();
 
                 FileOutputStream fos = new FileOutputStream(config);
-                fos.write("config\\\\serverbackup\\\\backups".getBytes());
+                fos.write("config\\\\server_backup\\\\backups".getBytes());
 
                 fos.close();
             } catch (Exception e) {
@@ -140,16 +140,23 @@ public class Main implements CommandExecutor{
             }
         }
         else if(isFileValid(file)) {
-            zos.putNextEntry(new ZipEntry(getFileName(file)));
+            try{
 
-            FileInputStream fis = new FileInputStream(file);
-            int i;
+                FileInputStream fis = new FileInputStream(file);
+                int i = fis.read();
 
-            while((i = fis.read()) != -1)
+                zos.putNextEntry(new ZipEntry(getFileName(file)));
+
                 zos.write(i);
 
-            fis.close();
-            zos.closeEntry();
+                while((i = fis.read()) != -1)
+                    zos.write(i);
+
+                fis.close();
+                zos.closeEntry();
+            }catch (Exception e){
+                logger.error("Can't put "+file.getAbsolutePath()+" in the backup.");
+            }
         }
     }
 
