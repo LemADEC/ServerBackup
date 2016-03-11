@@ -1,4 +1,4 @@
-package io.github.djxy;
+package io.github.djxy.serverBackup;
 
 import com.google.inject.Inject;
 import org.slf4j.Logger;
@@ -28,7 +28,7 @@ import java.util.zip.ZipOutputStream;
  * Created by Samuel on 2016-02-07.
  */
 @Plugin(id = "server_backup", name = "Server backup", version = "1.0")
-public class Sponge implements CommandExecutor{
+public class Main implements CommandExecutor{
 
     @Inject
     @DefaultConfig(sharedRoot = false)
