@@ -3,7 +3,7 @@ ServerBackup is a simple plugin that create backups for your server. There is no
 
 How to use this plugin
 ---
-Write this command in the console `sb` or `serverBackup` and that will create a backup of your server. If you want to set this command on a schedule, you could use my plugin [CommandScheduler](https://github.com/djxy/CommandScheduler).
+Write this command in the console `/sb backup` or `/serverBackup backup` and that will create a backup of your server. If you want to set this command on a schedule, you could use my plugin [CommandScheduler](https://github.com/djxy/CommandScheduler).
 
 To set the files you don't want in your backup, you have to set the [java patterns](https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html) inside the config file (`config/serverbackup/serverbackup.conf`).
 
@@ -14,6 +14,8 @@ Your config file should look like this:
 config\\serverbackup\\backups
 .jar$
 ```
+
+To delete your older backups, you have to do `/sb delete <minute>` or `/serverBackup delete <minute>`. All the backups older than now minus the minutes will be deleted.
 
 Backup
 ---
