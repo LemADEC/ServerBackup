@@ -13,10 +13,13 @@ package io.github.djxy.serverBackup;
 import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.spongepowered.api.Game;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
+import org.spongepowered.api.command.args.CommandElement;
+import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.source.ConsoleSource;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.command.spec.CommandSpec;
@@ -27,9 +30,12 @@ import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.text.Text;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -37,16 +43,13 @@ import java.util.zip.ZipOutputStream;
 /**
  * Created by Samuel on 2016-02-07.
  */
-@Plugin(id = "server_backup", name = "Server backup", version = "1.0")
-public class Main implements CommandExecutor{
+@Plugin(id = "serverbackup", name = "Server Backup", version = "1.3")
+public class Main {
 
     @Inject
     @DefaultConfig(sharedRoot = false)
     private Path defaultFile;
-    private File backupFolder;
-
-    @Inject
-    private Game game;
+    private Path backupFolder;
 
     @Inject
     private Logger logger;
@@ -56,29 +59,61 @@ public class Main implements CommandExecutor{
     @Listener
     public void onInitializationEvent(GameInitializationEvent event) {
         initFiles();
-        CommandSpec commandBackUp = CommandSpec.builder()
-                .description(Text.of("Create a backup of the server."))
-                .executor(this)
-                .build();
 
-        game.getCommandManager().register(this, commandBackUp, "serverBackup", "sb");
+        Sponge.getGame().getCommandManager().register(this, CommandSpec
+                .builder()
+                .child(CommandSpec
+                        .builder()
+                        .executor(new CommandExecutor() {
+                            @Override
+                            public CommandResult execute(CommandSource commandSource, CommandContext commandContext) throws CommandException {
+                                if (commandSource instanceof ConsoleSource)
+                                    createBackUp();
+
+                                return CommandResult.success();
+                            }
+                        })
+                        .build(), "backup")
+                .child(CommandSpec
+                        .builder()
+                        .executor(new CommandExecutor() {
+                            @Override
+                            public CommandResult execute(CommandSource commandSource, CommandContext commandContext) throws CommandException {
+                                if (commandSource instanceof ConsoleSource && commandContext.getOne("minute").isPresent())
+                                    deleteFilesOlder((Integer) commandContext.getOne("minute").get());
+
+                                return CommandResult.success();
+                            }
+                        })
+                        .arguments(GenericArguments.onlyOne(GenericArguments.integer(Text.of("minute"))))
+                        .build(), "delete")
+                .build(), "serverBackup", "sb");
     }
 
-    @Override
-    public CommandResult execute(CommandSource commandSource, CommandContext commandContext) throws CommandException {
-        if(commandSource instanceof ConsoleSource)
-            createBackUp();
+    private void deleteFilesOlder(int minutes){
+        List<File> filesToDelete = new ArrayList<>();
 
-        return CommandResult.success();
+        for (File file : backupFolder.toFile().listFiles()){
+            try {
+                BasicFileAttributes attr = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
+                long difference = System.currentTimeMillis() - attr.creationTime().toMillis();
+
+                if(minutes*60*1000 <= difference)
+                    filesToDelete.add(file);
+            } catch (Exception e) {}
+        }
+
+        for(File file : filesToDelete)
+            file.delete();
+
+        logger.info(filesToDelete.size()+" file(s) deleted.");
     }
 
     private void initFiles(){
-        File folder = defaultFile.toFile().getParentFile();
+        backupFolder = defaultFile.getParent().resolve("backups");
         File config = defaultFile.toFile();
-        backupFolder = new File(folder.getPath()+File.separator+"backups");
 
-        if(!backupFolder.exists())
-            backupFolder.mkdirs();
+        backupFolder.toFile().mkdirs();
 
         if(!config.exists()){
             try {
@@ -114,7 +149,7 @@ public class Main implements CommandExecutor{
         new Thread(new Runnable() {
             @Override
             public void run() {
-                File zip = new File(backupFolder.getPath()+File.separator + createBackupName());
+                File zip = backupFolder.resolve(createBackupName()).toFile();
 
                 try {
                     logger.info("Server backup started.");
@@ -124,7 +159,6 @@ public class Main implements CommandExecutor{
                     putFileInZip(new File("."), zos);
 
                     zos.close();
-
                     logger.info("Server backup finished.");
                 } catch (Exception e) {
                     e.printStackTrace();
