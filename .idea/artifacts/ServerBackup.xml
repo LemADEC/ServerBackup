@@ -1,8 +1,11 @@
 <component name="ArtifactManager">
   <artifact type="jar" name="ServerBackup">
-    <output-path>$USER_HOME$/Desktop/serverTest/mods</output-path>
+    <output-path>./output</output-path>
     <root id="archive" name="ServerBackup.jar">
       <element id="module-output" name="ServerBackup" />
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/META-INF/MANIFEST.MF" />
+      </element>
     </root>
   </artifact>
 </component>
